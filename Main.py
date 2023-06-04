@@ -19,17 +19,17 @@ import shutil
 class MainUI(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        photo = PhotoImage(file = 'hand.png')
-        self.iconphoto(False, photo)
-        self.resizable(False, False)
+        # photo = PhotoImage(file = 'hand.png')
+        # self.iconphoto(False, photo)
+        # self.resizable(False, False)
 
 
-        self.geometry("594x372")
-        # self.overrideredirect(True) // Ẩn thanh tiêu đề 
+        self.geometry("594x365")
+        self.overrideredirect(True) 
 
-        self.title("PalmPrint Recognizer")
-        self.title_font = tkfont.Font(family='Cursive', size=18, weight="bold", slant="italic")
-        self.configure(bg="#FFFFFF")
+        # self.title("PalmPrint Recognizer")
+        # self.title_font = tkfont.Font(family='Cursive', size=18, weight="bold", slant="italic")
+        # self.configure(bg="#FFFFFF")
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
@@ -168,7 +168,7 @@ class StartPage(tk.Frame):
         self.thread3 = None
         self.stop_thread3 = False
         self.stop_thread1 = False
-        
+        self.last_detection_time=0
         # self.start_detection()
     def start_detection(self):
         self.thread1 = threading.Thread(target=self.run_detection)
@@ -185,9 +185,12 @@ class StartPage(tk.Frame):
     def run_detection(self):
         if Detected_Object():
             self.start_prediction()
+        else:
+            self.controller.show_frame("StartPage")
 
 
     def start_prediction(self):
+        
         self.thread2 = threading.Thread(target=self.run_prediction)
         self.thread2.start()
         print("Thread 2 started")
@@ -299,16 +302,17 @@ class StartPage(tk.Frame):
     @staticmethod
     def relative_to_assets(path: str) -> Path:
         OUTPUT_PATH = Path(__file__).parent
-        ASSETS_PATH = OUTPUT_PATH / Path(r"D:\HOC TAP\KLTN\GUI\build\assets\frame4")
+        ASSETS_PATH = OUTPUT_PATH / Path("./assets/frame4")
         return ASSETS_PATH / Path(path)   
     
+import tkinter as tk
+from PIL import Image, ImageTk
 
 class PutHand(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-
-        self.canvas = Canvas(
+        self.canvas = tk.Canvas(
             self,
             bg="#FBFBFB",
             height=368,
@@ -319,34 +323,36 @@ class PutHand(tk.Frame):
         )
         self.canvas.place(x=0, y=0)
 
-        self.image_image_1 = PhotoImage(file=self.relative_to_assets("image_1.png"))
-        self.image_1 = self.canvas.create_image(304.0, 184.0, image=self.image_image_1)
+        gif_file = "./assets/frame3/puthand.gif"
+        gif = Image.open(gif_file)
 
-        self.canvas.create_text(
-            80.0,
-            115.0,
-            anchor="nw",
-            text=" PUT YOUR HAND ",
-            fill="#DF1717",
-            font=("Georgia", 26 * -1, "bold")
-        )
+        self.frames = []
+        for frame in range(gif.n_frames):
+                gif.seek(frame)
+                frame_image = ImageTk.PhotoImage(gif.copy())
+                self.frames.append(frame_image)
 
-        self.canvas.create_text(
-            85.0,
-            168.0,
-            anchor="nw",
-            text="ABOVE THE BOX",
-            fill="#DF1717",
-            font=("Georgia", 26 * -1, "bold")
-        )
+        self.current_frame = 0
 
+        self.gif_animation = None
 
+        self.update_gif_frame()
+
+    def update_gif_frame(self):
+        image = self.frames[self.current_frame]
+        if self.gif_animation:
+            self.canvas.delete(self.gif_animation)
+        self.gif_animation = self.canvas.create_image(304.0, 184.0, image=image)
+
+        self.current_frame = (self.current_frame + 1) % len(self.frames)
+        self.after(50, self.update_gif_frame)
 
     @staticmethod
     def relative_to_assets(path: str) -> Path:
         OUTPUT_PATH = Path(__file__).parent
-        ASSETS_PATH = OUTPUT_PATH / Path(r"D:\HOC TAP\KLTN\GUI\build\assets\frame3")
+        ASSETS_PATH = OUTPUT_PATH / Path("./assets/frame3")
         return ASSETS_PATH / Path(path)
+
 
 
 class Train(tk.Frame):
@@ -614,7 +620,7 @@ class Train(tk.Frame):
     @staticmethod
     def relative_to_assets(path: str) -> Path:
         OUTPUT_PATH = Path(__file__).parent
-        ASSETS_PATH = OUTPUT_PATH / Path(r"D:\HOC TAP\KLTN\GUI\build\assets\frame1")
+        ASSETS_PATH = OUTPUT_PATH / Path("./assets/frame1")
         return ASSETS_PATH / Path(path)
 
 class EndPage(tk.Frame):
@@ -640,7 +646,7 @@ class EndPage(tk.Frame):
     @staticmethod
     def relative_to_assets(path: str) -> Path:
         OUTPUT_PATH = Path(__file__).parent
-        ASSETS_PATH = OUTPUT_PATH / Path(r"D:\HOC TAP\KLTN\GUI\build\assets\frame0")
+        ASSETS_PATH = OUTPUT_PATH / Path("./assets/frame0")
         return ASSETS_PATH / Path(path)
 class Failed(tk.Frame):
     def __init__(self, parent, controller):
@@ -667,7 +673,7 @@ class Failed(tk.Frame):
     @staticmethod
     def relative_to_assets(path: str) -> Path:
         OUTPUT_PATH = Path(__file__).parent
-        ASSETS_PATH = OUTPUT_PATH / Path(r"D:\HOC TAP\KLTN\GUI\build\assets\frame5")
+        ASSETS_PATH = OUTPUT_PATH / Path("./assets/frame5")
         return ASSETS_PATH / Path(path)
     
 class Password(tk.Frame):
@@ -1092,7 +1098,7 @@ class Password(tk.Frame):
     @staticmethod
     def relative_to_assets(path: str) -> Path:
         OUTPUT_PATH = Path(__file__).parent
-        ASSETS_PATH = OUTPUT_PATH / Path(r"D:\HOC TAP\KLTN\GUI\build\assets\frame6")
+        ASSETS_PATH = OUTPUT_PATH / Path("./assets/frame6")
         return ASSETS_PATH / Path(path)
 
 
