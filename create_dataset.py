@@ -38,11 +38,11 @@ def start_capture():
         except:
             print('Directory Already Created')
         cap = cv2.VideoCapture(0)
-        # cap.set(cv2.CAP_PROP_FRAME_WIDTH,640)
-        # cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
-        # cap.set(3, 640)
-        # cap.set(4, 480)
-        # cap.set(cv2.CAP_PROP_FPS, 30)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH,640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT,480)
+        cap.set(3, 640)
+        cap.set(4, 480)
+        cap.set(cv2.CAP_PROP_FPS, 30)
         with mp_hands.Hands(
                 #model_complexity=0,
                 min_detection_confidence=0.5,

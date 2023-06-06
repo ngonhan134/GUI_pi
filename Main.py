@@ -516,7 +516,7 @@ class Train(tk.Frame):
         
 
     def load_bar(self):
-        self.percentage += 2  # Giá trị tiến trình tăng 10% mỗi lần
+        self.percentage += 5  # Giá trị tiến trình tăng 10% mỗi lần
         self.pb['value'] = self.percentage
         self.value_label['text'] = f"Scanning Progress: {self.percentage}%"
         if self.percentage < 100:
@@ -576,12 +576,12 @@ class Train(tk.Frame):
         self.percentage = 0
         self.load_bar1()
     def load_bar1(self):
-        self.percentage += 1  # Giá trị tiến trình tăng 10% mỗi lần
+        self.percentage += 0.2  # Giá trị tiến trình tăng 10% mỗi lần
         self.pb['value'] = self.percentage
         self.value_label['text'] = f"Train Progress: {self.percentage}%"
         if self.percentage < 100:
             # Tiếp tục cập nhật tiến trình nếu chưa hoàn thành
-            self.after(1000, self.load_bar)
+            self.after(1000, self.load_bar1)
     def update_progress_bar1(self):
         while self.stop_thread5 :
             # Cập nhật thanh progress bar song song với quá trình train()
@@ -1122,34 +1122,6 @@ class CustomProgressBar(ttk.Progressbar):
     def reset(self):
         self.value = 0
         self['value'] = self.value
-class PasswordManager(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-        self.default_password = "1111"
-        self.entered_password = ""
-
-    def submit_password(self):
-        if self.entered_password == self.default_password:
-            print("Password correct!")
-            self.controller.show_frame("EndPage")
-        else:
-            print("Password incorrect!")
-
-    def button_click(self, button_number):
-        self.entered_password += str(button_number)
-        print("Entered password:", self.entered_password)
-
-    def button_clicked(self, number):
-        self.current_password += str(number)
-        print(f"Button {number} clicked!")
-        print("Current password:", self.current_password)
-
-class PasswordChanger:
-    @classmethod
-    def change_password(cls, new_password):
-        PasswordManager.default_password = new_password
-        print("Password changed successfully!")
 
 class ChangPassword(tk.Frame):
     def __init__(self, parent, controller):
