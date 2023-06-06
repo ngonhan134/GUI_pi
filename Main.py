@@ -15,18 +15,31 @@ from create_dataset import start_capture
 import glob
 import shutil
 
+# default_password="1111"
+
+def save_password(password):
+    with open("password.txt", "w") as file:
+        file.write(password)
+
+def load_password():
+    try:
+        with open("password.txt", "r") as file:
+            return file.read()
+    except FileNotFoundError:
+        return ""
+
 
 class MainUI(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
-        # photo = PhotoImage(file = 'hand.png')
-        # self.iconphoto(False, photo)
+
         # self.resizable(False, False)
 
 
         self.geometry("594x365")
         self.overrideredirect(True) 
-
+        photo = PhotoImage(file = 'hand.png')
+        self.iconphoto(False, photo)
         # self.title("PalmPrint Recognizer")
         # self.title_font = tkfont.Font(family='Cursive', size=18, weight="bold", slant="italic")
         # self.configure(bg="#FFFFFF")
@@ -39,7 +52,7 @@ class MainUI(tk.Tk):
         container.grid_columnconfigure(1, weight=1)
 
         self.frames = {}
-        for F in (StartPage,EndPage,PutHand,Train,Password,Failed):
+        for F in (StartPage,EndPage,PutHand,Train,Password,Failed,ChangPassword):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -57,6 +70,7 @@ class MainUI(tk.Tk):
             self.frames["StartPage"].show_buttons()
             self.frames["Train"].hide_buttons()
             self.frames["Password"].hide_buttons()
+            self.frames["ChangPassword"].hide_buttons()
         elif page_name == "PutHand":
             self.frames["StartPage"].hide_buttons()
             self.frames["Password"].hide_buttons()
@@ -75,6 +89,13 @@ class MainUI(tk.Tk):
             self.frames["StartPage"].hide_buttons()
             self.frames["Password"].show_buttons()
             self.frames["Train"].hide_buttons()
+            self.frames["ChangPassword"].hide_buttons()
+        elif page_name == "ChangPassword":
+            self.frames["StartPage"].hide_buttons()
+            self.frames["Password"].hide_buttons()
+            self.frames["Train"].hide_buttons()
+            self.frames["ChangPassword"].show_buttons()
+
 
 
         frame = self.frames[page_name]
@@ -116,7 +137,7 @@ class StartPage(tk.Frame):
             image=self.button_image_1,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: self.controller.show_frame("Password"),
+            command=lambda: self.controller.show_frame("Password") ,
             relief="flat"
         )
         # self.button_1.place(x=291.0, y=183.0, width=140.428466796875, height=53.970947265625)
@@ -680,6 +701,7 @@ class Password(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
+        
         self.canvas = Canvas(
             self,
             bg = "#FFFFFF",
@@ -881,7 +903,7 @@ class Password(tk.Frame):
             image=self.button_image_12,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: self.submit_password()  ,
+            command=lambda: self.submit_password() or self.clear_password() ,
             relief="flat"
         )
         self.button_12.place(
@@ -897,7 +919,7 @@ class Password(tk.Frame):
             image=self.button_image_13,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: print("self.button_13 clicked"),
+            command=lambda: self.controller.show_frame("ChangPassword") or self.clear_password(),
             relief="flat"
         )
         self.button_13.place(
@@ -913,7 +935,7 @@ class Password(tk.Frame):
             image=self.button_image_14,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: self.controller.show_frame("StartPage"),
+            command=lambda: self.controller.show_frame("StartPage") or self.clear_password() ,
             relief="flat"
         )
         self.button_14.place(
@@ -925,7 +947,7 @@ class Password(tk.Frame):
     
         self.buttons_hidden=False
         
-        self.default_password = "1111"
+        
         self.entered_password = ""
         self.stop_thread3 = False
         self.stop_thread1 = False
@@ -1032,21 +1054,6 @@ class Password(tk.Frame):
 
             self.buttons_hidden = False
    
-    # def start_detection(self):
-    #     self.thread1 = threading.Thread(target=self.run_detection)
-    #     self.thread1.start()
-    #     print("Thread 1 started")
-
-
-    # def stop_detection(self):
-    #     if self.thread1 and self.thread1.is_alive():
-    #         self.thread1.join()
-    #     print("Thread 1 stopped")
-
-
-    # def run_detection(self):
-    #     if Detected_Object():
-    #         self.start_prediction()
 
     def start_door_control(self):
         self.stop_thread3 = False
@@ -1077,19 +1084,18 @@ class Password(tk.Frame):
         self.stop_door_control()
 
     def submit_password(self):
-        if self.entered_password == self.default_password:
+        if self.entered_password == load_password():
             print("Password correct!")
             self.controller.show_frame("EndPage")
             self.start_door_control()
             # self.controller.after(3000, lambda: self.controller.show_frame("StartPage"))
         else:
-            messagebox.showinfo("Password Incorrect", "Incorrect password!")
-            print("Password incorrect!")
+            messagebox.showinfo("Error", "Incorrect password!")
+           
 
     def button_click(self, button_number):
         self.entered_password += str(button_number)
         print("Entered password:", self.entered_password)
-
     def clear_password(self):
         self.entered_password = ""
         print("Password cleared!")
@@ -1144,6 +1150,514 @@ class PasswordChanger:
     def change_password(cls, new_password):
         PasswordManager.default_password = new_password
         print("Password changed successfully!")
+
+class ChangPassword(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+
+
+        self.canvas = Canvas(
+            self,
+            bg = "#FFFFFF",
+            height = 368,
+            width = 594,
+            bd = 0,
+            highlightthickness = 0,
+            relief = "ridge"
+        )
+
+        self.canvas.place(x = 0, y = 0)
+        self.image_image_1 = PhotoImage(
+            file=self.relative_to_assets("image_1.png"))
+        self.image_1 = self.canvas.create_image(
+            297.0,
+            184.0,
+            image=self.image_image_1
+        )
+
+        self.button_image_1 = PhotoImage(
+            file=self.relative_to_assets("button_1.png"))
+        self.button_1 = Button(
+            image=self.button_image_1,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.button_1_click(),
+            relief="flat"
+        )
+        self.button_1.place(
+            x=56.0,
+            y=271.0,
+            width=62.0,
+            height=55.0
+        )
+
+        self.button_image_2 = PhotoImage(
+            file=self.relative_to_assets("button_2.png"))
+        self.button_2 = Button(
+            image=self.button_image_2,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.button_2_click(),
+            relief="flat"
+        )
+        self.button_2.place(
+            x=51.0,
+            y=48.0,
+            width=67.0,
+            height=64.0
+        )
+
+        self.button_image_3 = PhotoImage(
+            file=self.relative_to_assets("button_3.png"))
+        self.button_3 = Button(
+            image=self.button_image_3,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.button_3_click(),
+            relief="flat"
+        )
+        self.button_3.place(
+            x=127.0,
+            y=49.0,
+            width=67.0,
+            height=64.0
+        )
+
+        self.button_image_4 = PhotoImage(
+            file=self.relative_to_assets("button_4.png"))
+        self.button_4 = Button(
+            image=self.button_image_4,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.button_4_click(),
+            relief="flat"
+        )
+        self.button_4.place(
+            x=203.0,
+            y=50.0,
+            width=67.0,
+            height=64.0
+        )
+
+        self.button_image_5 = PhotoImage(
+            file=self.relative_to_assets("button_5.png"))
+        self.button_5 = Button(
+            image=self.button_image_5,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.button_5_click(),
+            relief="flat"
+        )
+        self.button_5.place(
+            x=51.0,
+            y=194.0,
+            width=67.0,
+            height=64.0
+        )
+
+        self.button_image_6 = PhotoImage(
+            file=self.relative_to_assets("button_6.png"))
+        self.button_6 = Button(
+            image=self.button_image_6,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.button_6_click(),
+            relief="flat"
+        )
+        self.button_6.place(
+            x=127.0,
+            y=194.0,
+            width=67.0,
+            height=64.0
+        )
+
+        self.button_image_7 = PhotoImage(
+            file=self.relative_to_assets("button_7.png"))
+        self.button_7 = Button(
+            image=self.button_image_7,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda : self.button_7_click(),
+            relief="flat"
+        )
+        self.button_7.place(
+            x=203.0,
+            y=195.0,
+            width=67.0,
+            height=64.0
+        )
+
+        self.button_image_8 = PhotoImage(
+            file=self.relative_to_assets("button_8.png"))
+        self.button_8 = Button(
+            image=self.button_image_8,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.button_8_click(),
+            relief="flat"
+        )
+        self.button_8.place(
+            x=51.0,
+            y=121.0,
+            width=67.0,
+            height=64.0
+        )
+
+        self.button_image_9 = PhotoImage(
+            file=self.relative_to_assets("button_9.png"))
+        self.button_9 = Button(
+            image=self.button_image_9,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.button_9_click(),
+            relief="flat"
+        )
+        self.button_9.place(
+            x=127.0,
+            y=121.0,
+            width=67.0,
+            height=64.0
+        )
+
+        self.button_image_10 = PhotoImage(
+            file=self.relative_to_assets("button_10.png"))
+        self.button_10 = Button(
+            image=self.button_image_10,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.button_10_click(),
+            relief="flat"
+        )
+        self.button_10.place(
+            x=203.0,
+            y=122.0,
+            width=67.0,
+            height=64.0
+        )
+
+        self.button_image_11 = PhotoImage(
+            file=self.relative_to_assets("button_11.png"))
+        self.button_11 = Button(
+            image=self.button_image_11,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.clear_entry(),
+            relief="flat"
+        )
+        self.button_11.place(
+            x=131.0,
+            y=271.0,
+            width=134.0,
+            height=50.0
+        )
+
+        self.button_image_12 = PhotoImage(
+            file=self.relative_to_assets("button_12.png"))
+        self.button_12 = Button(
+            image=self.button_image_12,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.change_password_entry(),
+            relief="flat"
+        )
+        self.button_12.place(
+            x=358.0,
+            y=217.0,
+            width=119.0,
+            height=42.0
+        )
+
+        self.button_image_13 = PhotoImage(
+            file=self.relative_to_assets("button_13.png"))
+        self.button_13 = Button(
+            image=self.button_image_13,
+            borderwidth=0,
+            highlightthickness=0,
+            command=lambda: self.controller.show_frame("Password"),
+            relief="flat"
+        )
+        self.button_13.place(
+            x=358.0,
+            y=284.0,
+            width=119.0,
+            height=42.0
+        )
+
+        self.entry_image_1 = PhotoImage(
+            file=self.relative_to_assets("entry_1.png"))
+        self.entry_bg_1 = self.canvas.create_image(
+            418.0,
+            87.5,
+            image=self.entry_image_1
+        )
+        self.entry_1 = Entry(
+            bd=0,
+            bg="#FFFFFF",
+            fg="#000716",
+            highlightthickness=0,
+            show="*"
+        )
+        self.entry_1.place(
+            x=328.0,
+            y=61.0,
+            width=180.0,
+            height=51.0
+        )
+
+        self.entry_image_2 = PhotoImage(
+            file=self.relative_to_assets("entry_2.png"))
+        self.entry_bg_2 = self.canvas.create_image(
+            418.0,
+            167.5,
+            image=self.entry_image_2
+        )
+        self.entry_2 = Entry(
+            bd=0,
+            bg="#FFFFFF",
+            fg="#000716",
+            highlightthickness=0,
+            show="*"
+        )
+        self.entry_2.place(
+            x=328.0,
+            y=141.0,
+            width=180.0,
+            height=51.0
+            
+        )
+
+        self.canvas.create_text(
+            316.0,
+            41.0,
+            anchor="nw",
+            text="Old Password",
+            fill="#000000",
+            font=("Inter Black", 16 * -1)
+        )
+
+        self.canvas.create_text(
+            316.0,
+            118.0,
+            anchor="nw",
+            text="New Password",
+            fill="#000000",
+            font=("Inter Black", 16 * -1)
+        )
+        self.buttons_hidden=False
+    def insert_number(self,number,entry):
+            global selected_entry
+            selected_entry = entry
+            if selected_entry == self.entry_1:
+                selected_entry.insert(ttk.END, str(number))
+            elif selected_entry == self.entry_2:
+                selected_entry.insert(ttk.END, str(number))
+    def button_1_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "0")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "0")
+    def button_2_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "1")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "1")
+    def button_3_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "2")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "2")
+    def button_4_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "3")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "3")
+    def button_5_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "7")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "7")
+    def button_6_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "8")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "8")
+    def button_7_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "9")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "9")
+    def button_8_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "4")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "4")
+    def button_9_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "5")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "5")
+    def button_10_click(self):
+            selected_entry = self.focus_get()
+
+            if selected_entry == self.entry_1:
+                self.entry_1.insert("end", "6")
+            elif selected_entry == self.entry_2:
+                self.entry_2.insert("end", "6")
+    def change_password_entry(self):
+        entered_old_password = self.entry_1.get()
+        entered_new_password = self.entry_2.get()
+
+        # Kiểm tra tính hợp lệ của mật khẩu cũ
+        
+        if entered_old_password == load_password():
+            # Thực hiện thay đổi mật khẩu
+            save_password(entered_new_password)
+            messagebox.showinfo( "Notice" ,"Change password successfully!")
+            
+        else:
+            messagebox.showerror("Error", "Old password is incorrect!")
+
+        # Xóa nội dung trong entry_1 và entry_2
+        self.entry_1.delete(0, "end")
+        self.entry_2.delete(0, "end")
+    def clear_entry(self):
+        selected_entry = self.focus_get()
+
+        if selected_entry == self.entry_1:
+            self.entry_1.delete(0, "end")
+        elif selected_entry == self.entry_2:
+            self.entry_2.delete(0, "end")
+
+
+
+    def hide_buttons(self):
+        if not self.buttons_hidden:
+            self.button_1.place_forget()
+            self.button_2.place_forget()
+            self.button_3.place_forget()
+            self.button_4.place_forget()
+            self.button_5.place_forget()
+            self.button_6.place_forget()
+            self.button_7.place_forget()
+            self.button_8.place_forget()
+            self.button_9.place_forget()
+            self.button_10.place_forget()
+            self.button_11.place_forget()
+            self.button_12.place_forget()
+            self.button_13.place_forget()
+            self.entry_1.place_forget()
+            self.entry_2.place_forget()
+
+            self.buttons_hidden = True
+            # self.stop_threads()
+
+    def show_buttons(self):
+        if self.buttons_hidden:
+            self.button_1.place(           x=56.0,
+                                        y=271.0,
+                                        width=62.0,
+                                        height=55.0)
+            self.button_2.place(          x=51.0,
+                                        y=48.0,
+                                        width=67.0,
+                                        height=64.0)
+            self.button_3.place(        x=127.0,
+                                        y=49.0,
+                                        width=67.0,
+                                        height=64.0)
+            self.button_4.place(         x=203.0,
+                                        y=50.0,
+                                        width=67.0,
+                                        height=64.0)
+            self.button_5.place(      x=51.0,
+                                        y=194.0,
+                                        width=67.0,
+                                        height=64.0)
+            self.button_6.place(      x=127.0,
+                                    y=194.0,
+                                    width=67.0,
+                                    height=64.0)
+            self.button_7.place(       x=203.0,
+                                    y=195.0,
+                                    width=67.0,
+                                    height=64.0)
+            self.button_8.place(          x=51.0,
+                                    y=121.0,
+                                    width=67.0,
+                                    height=64.0)
+            self.button_9.place(
+            x=127.0,
+            y=121.0,
+            width=67.0,
+            height=64.0
+        )
+            self.button_10.place(
+            x=203.0,
+            y=122.0,
+            width=67.0,
+            height=64.0
+        )
+            self.button_11.place(
+            x=131.0,
+            y=271.0,
+            width=134.0,
+            height=50.0
+        )
+
+            self.button_12.place(
+                        x=358.0,
+                y=217.0,
+                width=119.0,
+                height=42.0
+        )
+            self.button_13.place(
+            x=358.0,
+            y=284.0,
+            width=119.0,
+            height=42.0
+        )
+
+            self.entry_1.place(
+                        x=328.0,
+    y=61.0,
+    width=180.0,
+    height=51.0
+    
+        )
+            self.entry_2.place(
+                x=328.0,
+                y=141.0,
+                width=180.0,
+                height=51.0
+            )
+
+
+            self.buttons_hidden = False
+   
+    @staticmethod
+    def relative_to_assets(path: str) -> Path:
+        OUTPUT_PATH = Path(__file__).parent
+        ASSETS_PATH = OUTPUT_PATH / Path("./assets/frame7")
+        return ASSETS_PATH / Path(path)
 
 app = MainUI()
 app.mainloop()

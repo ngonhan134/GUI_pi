@@ -3,7 +3,7 @@ import time
 import random
 def GetDistance():
     # Generate a random distance between 0 and 100 cm
-    distance = random.uniform(1, 50)
+    distance = random.uniform(1, 100)
     print("Random Distance:", distance, "cm")
     return distance
 

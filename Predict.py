@@ -43,7 +43,7 @@ def prediction():
         print("Đang dự đoán...!")
         print_flag = False
 
-    if user_prob > 0.9:
+    if user_prob > 0.8:
         print(user_prob)
         print("Hợp lệ !!")
         return True
