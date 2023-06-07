@@ -366,7 +366,7 @@ class PutHand(tk.Frame):
         self.gif_animation = self.canvas.create_image(304.0, 184.0, image=image)
 
         self.current_frame = (self.current_frame + 1) % len(self.frames)
-        self.after(50, self.update_gif_frame)
+        self.after(20, self.update_gif_frame)
 
     @staticmethod
     def relative_to_assets(path: str) -> Path:
@@ -660,8 +660,33 @@ class EndPage(tk.Frame):
         )
         self.canvas.place(x=0, y=0)
 
-        self.image_image_1 = PhotoImage(file=self.relative_to_assets("image_1.png"))
-        self.image_1 = self.canvas.create_image(297.0, 184.0, image=self.image_image_1)
+        # self.image_image_1 = PhotoImage(file=self.relative_to_assets("image_1.png"))
+        # self.image_1 = self.canvas.create_image(297.0, 184.0, image=self.image_image_1)
+        gif_file = "./assets/frame0/verify2.gif"
+        gif = Image.open(gif_file)
+
+        self.frames = []
+        for frame in range(gif.n_frames):
+                gif.seek(frame)
+                frame_image = ImageTk.PhotoImage(gif.copy())
+                self.frames.append(frame_image)
+
+        self.current_frame = 0
+
+        self.gif_animation = None
+
+        self.update_gif_frame()
+
+    def update_gif_frame(self):
+        image = self.frames[self.current_frame]
+        if self.gif_animation:
+            self.canvas.delete(self.gif_animation)
+        self.gif_animation = self.canvas.create_image(304.0, 184.0, image=image)
+
+        self.current_frame = (self.current_frame + 1) % len(self.frames)
+        self.after(10, self.update_gif_frame)
+
+
 
 
     @staticmethod
